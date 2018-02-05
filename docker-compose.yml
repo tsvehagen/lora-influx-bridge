@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  db:
+    image: influxdb:alpine
+    expose:
+      - 8086/tcp
+    environment:
+      INFLUXDB_DB: lora
+      INFLUXDB_HTTP_AUTH_ENABLE: 1
+      INFLUXDB_USER: user
+      INFLUXDB_USER_PASSWORD: password
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000/tcp
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+
+  lora-influx-bridge:
+    build: .
+    volumes:
+      - ./ca.crt:/ca.crt
+    environment:
+      INFLUXDB_SERVER: http://db:8086
+      INFLUXDB_DB: lora
+      INFLUXDB_USERNAME: user
+      INFLUXDB_PASSWORD: password
+      MQTT_SERVER: ssl://mqtt-server:8883
+      MQTT_USERNAME: user
+      MQTT_PASSWORD: password
+      MQTT_CA_CERT: /ca.crt
